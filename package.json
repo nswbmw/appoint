@@ -1,0 +1,30 @@
+{
+  "name": "appoint",
+  "version": "1.0.0",
+  "description": "Another Promise implementation.",
+  "main": "appoint.js",
+  "keywords": [
+    "promise",
+    "promise-aplus"
+  ],
+  "scripts": {
+    "jshint": "jshint appoint.js",
+    "test": "npm run jshint && mocha ./test.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nswbmw/implementation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nswbmw/implementation/issues"
+  },
+  "dependencies": {
+    "immediate": "~3.2.3"
+  },
+  "devDependencies": {
+    "jshint": "^2.9.4",
+    "mocha": "^3.2.0",
+    "promises-aplus-tests": "^2.1.2"
+  }
+}
