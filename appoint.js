@@ -27,7 +27,7 @@ function Promise(resolver) {
   this.value = void 0;
   this.queue = [];
   if (resolver !== INTERNAL) {
-    safelyResolveThenable(this, resolver);
+    safelyResolveThen(this, resolver);
   }
 }
 
@@ -88,9 +88,9 @@ function unwrap(promise, func, value) {
 
 function doResolve(self, value) {
   try {
-    var thenable = getThen(value);
-    if (thenable) {
-      safelyResolveThenable(self, thenable);
+    var then = getThen(value);
+    if (then) {
+      safelyResolveThen(self, then);
     } else {
       self.state = FULFILLED;
       self.value = value;
@@ -122,10 +122,10 @@ function getThen(obj) {
   }
 }
 
-function safelyResolveThenable(self, thenable) {
+function safelyResolveThen(self, then) {
   var called = false;
   try {
-    thenable(function (value) {
+    then(function (value) {
       if (called) {
         return;
       }
