@@ -1,7 +1,7 @@
 {
   "name": "appoint",
   "version": "1.0.2",
-  "description": "Another Promise implementation.",
+  "description": "Another Promise/A+ implementation.",
   "main": "appoint.js",
   "keywords": [
     "promise",

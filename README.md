@@ -1,6 +1,6 @@
 ## appoint
 
-Another Promise implementation. Inspired by [lie](https://github.com/calvinmetcalf/lie).
+Another Promise/A+ implementation, inspired by [lie](https://github.com/calvinmetcalf/lie).
 
 ### Install
 
