@@ -1,7 +1,5 @@
 'use strict';
 
-var immediate = require('immediate');
-
 function INTERNAL() {}
 function isFunction(func) {
   return typeof func === 'function';
@@ -71,7 +69,7 @@ function QueueItem(promise, onFulfilled, onRejected) {
 }
 
 function unwrap(promise, func, value) {
-  immediate(function () {
+  process.nextTick(function () {
     var returnValue;
     try {
       returnValue = func(value);
