@@ -1,6 +1,6 @@
 {
   "name": "appoint",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Another Promise/A+ implementation.",
   "main": "appoint.js",
   "keywords": [
@@ -8,8 +8,7 @@
     "promise-aplus"
   ],
   "scripts": {
-    "jshint": "jshint appoint.js",
-    "test": "npm run jshint && mocha ./test.js"
+    "test": "mocha ./test.js"
   },
   "license": "MIT",
   "repository": {
@@ -21,7 +20,11 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "jshint": "^2.9.4",
+    "eslint-config-standard": "11.0.0",
+    "eslint-plugin-import": "2.9.0",
+    "eslint-plugin-node": "6.0.1",
+    "eslint-plugin-promise": "3.7.0",
+    "eslint-plugin-standard": "3.0.1",
     "mocha": "^3.2.0",
     "promises-aplus-tests": "^2.1.2"
   }

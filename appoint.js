@@ -1,234 +1,231 @@
-'use strict';
-
-function INTERNAL() {}
-function isFunction(func) {
-  return typeof func === 'function';
+function INTERNAL () {}
+function isFunction (func) {
+  return typeof func === 'function'
 }
-function isObject(obj) {
-  return typeof obj === 'object';
+function isObject (obj) {
+  return typeof obj === 'object'
 }
-function isArray(arr) {
-  return Object.prototype.toString.call(arr) === '[object Array]';
+function isArray (arr) {
+  return Array.isArray(arr)
 }
 
-var PENDING = 0;
-var FULFILLED = 1;
-var REJECTED = 2;
+const PENDING = 'pending'
+const FULFILLED = 'fulfilled'
+const REJECTED = 'rejected'
 
-module.exports = Promise;
+module.exports = Promise
 
-function Promise(resolver) {
+function Promise (resolver) {
   if (!isFunction(resolver)) {
-    throw new TypeError('resolver must be a function');
+    throw new TypeError('resolver must be a function')
   }
-  this.state = PENDING;
-  this.value = void 0;
-  this.queue = [];
+  this.state = PENDING
+  this.value = void 0
+  this.queue = []
   if (resolver !== INTERNAL) {
-    safelyResolveThen(this, resolver);
+    safelyResolveThen(this, resolver)
   }
 }
 
 Promise.prototype.then = function (onFulfilled, onRejected) {
-  if (!isFunction(onFulfilled) && this.state === FULFILLED ||
-    !isFunction(onRejected) && this.state === REJECTED) {
-    return this;
+  if ((!isFunction(onFulfilled) && this.state === FULFILLED) ||
+    (!isFunction(onRejected) && this.state === REJECTED)) {
+    return this
   }
-  var promise = new this.constructor(INTERNAL);
+  const promise = new this.constructor(INTERNAL)
   if (this.state !== PENDING) {
-    var resolver = this.state === FULFILLED ? onFulfilled : onRejected;
-    unwrap(promise, resolver, this.value);
+    const resolver = this.state === FULFILLED ? onFulfilled : onRejected
+    unwrap(promise, resolver, this.value)
   } else {
-    this.queue.push(new QueueItem(promise, onFulfilled, onRejected));
+    this.queue.push(new QueueItem(promise, onFulfilled, onRejected))
   }
-  return promise;
-};
+  return promise
+}
 
 Promise.prototype.catch = function (onRejected) {
-  return this.then(null, onRejected);
-};
+  return this.then(null, onRejected)
+}
 
-function QueueItem(promise, onFulfilled, onRejected) {
-  this.promise = promise;
+function QueueItem (promise, onFulfilled, onRejected) {
+  this.promise = promise
   this.callFulfilled = function (value) {
-    doResolve(this.promise, value);
-  };
+    doResolve(this.promise, value)
+  }
   this.callRejected = function (error) {
-    doReject(this.promise, error);
-  };
+    doReject(this.promise, error)
+  }
   if (isFunction(onFulfilled)) {
     this.callFulfilled = function (value) {
-      unwrap(this.promise, onFulfilled, value);
-    };
+      unwrap(this.promise, onFulfilled, value)
+    }
   }
   if (isFunction(onRejected)) {
     this.callRejected = function (error) {
-      unwrap(this.promise, onRejected, error);
-    };
+      unwrap(this.promise, onRejected, error)
+    }
   }
 }
 
-function unwrap(promise, func, value) {
+function unwrap (promise, func, value) {
   process.nextTick(function () {
-    var returnValue;
+    let returnValue
     try {
-      returnValue = func(value);
+      returnValue = func(value)
     } catch (error) {
-      return doReject(promise, error);
+      return doReject(promise, error)
     }
     if (returnValue === promise) {
-      doReject(promise, new TypeError('Cannot resolve promise with itself'));
+      doReject(promise, new TypeError('Cannot resolve promise with itself'))
     } else {
-      doResolve(promise, returnValue);
+      doResolve(promise, returnValue)
     }
-  });
+  })
 }
 
-function doResolve(self, value) {
+function doResolve (self, value) {
   try {
-    var then = getThen(value);
+    const then = getThen(value)
     if (then) {
-      safelyResolveThen(self, then);
+      safelyResolveThen(self, then)
     } else {
-      self.state = FULFILLED;
-      self.value = value;
+      self.state = FULFILLED
+      self.value = value
       self.queue.forEach(function (queueItem) {
-        queueItem.callFulfilled(value);
-      });
+        queueItem.callFulfilled(value)
+      })
     }
-    return self;
+    return self
   } catch (error) {
-    return doReject(self, error);
+    return doReject(self, error)
   }
 }
 
-function doReject(self, error) {
-  self.state = REJECTED;
-  self.value = error;
+function doReject (self, error) {
+  self.state = REJECTED
+  self.value = error
   self.queue.forEach(function (queueItem) {
-    queueItem.callRejected(error);
-  });
-  return self;
+    queueItem.callRejected(error)
+  })
+  return self
 }
 
-function getThen(obj) {
-  var then = obj && obj.then;
-  if (obj && (isObject(obj) || isFunction(obj)) && isFunction(then)) {
-    return function appyThen() {
-      then.apply(obj, arguments);
-    };
+function getThen (promise) {
+  const then = promise && promise.then
+  if (promise && (isObject(promise) || isFunction(promise)) && isFunction(then)) {
+    return function applyThen () {
+      then.apply(promise, arguments)
+    }
   }
 }
 
-function safelyResolveThen(self, then) {
-  var called = false;
+function safelyResolveThen (self, then) {
+  let called = false
   try {
     then(function (value) {
       if (called) {
-        return;
+        return
       }
-      called = true;
-      doResolve(self, value);
+      called = true
+      doResolve(self, value)
     }, function (error) {
       if (called) {
-        return;
+        return
       }
-      called = true;
-      doReject(self, error);
-    });
+      called = true
+      doReject(self, error)
+    })
   } catch (error) {
     if (called) {
-      return;
+      return
     }
-    called = true;
-    doReject(self, error);
+    called = true
+    doReject(self, error)
   }
 }
 
-Promise.resolve = resolve;
-function resolve(value) {
+Promise.resolve = resolve
+function resolve (value) {
   if (value instanceof this) {
-    return value;
+    return value
   }
-  return doResolve(new this(INTERNAL), value);
+  return doResolve(new this(INTERNAL), value)
 }
 
-Promise.reject = reject;
-function reject(reason) {
-  var promise = new this(INTERNAL);
-  return doReject(promise, reason);
+Promise.reject = reject
+function reject (reason) {
+  return doReject(new this(INTERNAL), reason)
 }
 
-Promise.all = all;
-function all(iterable) {
-  var self = this;
+Promise.all = all
+function all (iterable) {
+  const self = this
   if (!isArray(iterable)) {
-    return this.reject(new TypeError('must be an array'));
+    return this.reject(new TypeError('must be an array'))
   }
 
-  var len = iterable.length;
-  var called = false;
+  const len = iterable.length
+  let called = false
   if (!len) {
-    return this.resolve([]);
+    return this.resolve([])
   }
 
-  var values = new Array(len);
-  var resolved = 0;
-  var i = -1;
-  var promise = new this(INTERNAL);
+  const values = new Array(len)
+  let resolved = 0
+  let i = -1
+  const promise = new this(INTERNAL)
 
   while (++i < len) {
-    allResolver(iterable[i], i);
+    allResolver(iterable[i], i)
   }
-  return promise;
-  function allResolver(value, i) {
+  return promise
+  function allResolver (value, i) {
     self.resolve(value).then(resolveFromAll, function (error) {
       if (!called) {
-        called = true;
-        doReject(promise, error);
+        called = true
+        doReject(promise, error)
       }
-    });
-    function resolveFromAll(outValue) {
-      values[i] = outValue;
+    })
+    function resolveFromAll (outValue) {
+      values[i] = outValue
       if (++resolved === len && !called) {
-        called = true;
-        doResolve(promise, values);
+        called = true
+        doResolve(promise, values)
       }
     }
   }
 }
 
-Promise.race = race;
-function race(iterable) {
-  var self = this;
+Promise.race = race
+function race (iterable) {
+  const self = this
   if (!isArray(iterable)) {
-    return this.reject(new TypeError('must be an array'));
+    return this.reject(new TypeError('must be an array'))
   }
 
-  var len = iterable.length;
-  var called = false;
+  const len = iterable.length
+  let called = false
   if (!len) {
-    return this.resolve([]);
+    return this.resolve([])
   }
 
-  var i = -1;
-  var promise = new this(INTERNAL);
+  let i = -1
+  const promise = new this(INTERNAL)
 
   while (++i < len) {
-    resolver(iterable[i]);
+    resolver(iterable[i])
   }
-  return promise;
-  function resolver(value) {
+  return promise
+  function resolver (value) {
     self.resolve(value).then(function (response) {
       if (!called) {
-        called = true;
-        doResolve(promise, response);
+        called = true
+        doResolve(promise, response)
       }
     }, function (error) {
       if (!called) {
-        called = true;
-        doReject(promise, error);
+        called = true
+        doReject(promise, error)
       }
-    });
+    })
   }
 }
